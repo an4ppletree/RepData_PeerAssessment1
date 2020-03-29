@@ -12,7 +12,8 @@ output:
 
 Load libraries:
 
-```{r message = FALSE, warning = FALSE}
+
+```r
 library(ggplot2)
 library(dplyr)
 library(gridExtra)
@@ -20,16 +21,17 @@ library(gridExtra)
 
 Load datafile. Then, change date data to date variable type:
 
-```{r echo false}
+
+```r
 activities <- read.csv(file = "activity.csv", sep = ",")
 activities$date <- as.Date(activities$date, format = "%Y-%m-%d")
-
 ```
 
 ## What is mean total number of steps taken per day?
 Calculate total steps for each day:
 
-```{r}
+
+```r
 stepsByDate <- data.frame(date = unique(activities$date), totalSteps = 
                               tapply(activities$steps, activities$date, sum, 
                                      na.rm=TRUE), row.names = NULL)
@@ -39,31 +41,48 @@ stepsByDate <- data.frame(date = unique(activities$date), totalSteps =
 
 Plot a histogram of the total steps for each day:
 
-```{r}
+
+```r
 ggplot(stepsByDate, aes(x = totalSteps)) + 
            geom_histogram( binwidth = 500, fill = "green4") +
            labs( title = "Total Number of Steps Taken Each Day", x = 
                      "Total Steps" , y = "Frequency")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
 **3. Mean and median number of the total steps taken each day**
 
 Calculate and display the mean and median:
 
-````{r}
+
+```r
 meanStepsByDate <- mean(stepsByDate$totalSteps)
 medianStepsByDate <- median(stepsByDate$totalSteps)
 ```
-```{r}
+
+```r
 meanStepsByDate
+```
+
+```
+## [1] 9354.23
+```
+
+```r
 medianStepsByDate
+```
+
+```
+## [1] 10395
 ```
 
 ## What is the average daily activity pattern?
 
 **Calculate average steps for each day**
 
-```{r}
+
+```r
 avgByInterval <- data.frame(interval = unique(activities$interval), 
     avgSteps = tapply(activities$step, activities$interval, mean, na.rm = TRUE, 
                       row.names = NULL))
@@ -73,11 +92,14 @@ avgByInterval <- data.frame(interval = unique(activities$interval),
 
 Plot the average number of steps taken each day:
 
-```{r}
+
+```r
 plot(x = avgByInterval$interval, y = avgByInterval$avgSteps, type = "l", 
      col = "blue", main = "Average Steps by Interval", xlab = "Interval",
      ylab = "Average Steps")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
 
 **5. The 5-minute interval that, on average, contains the maximum number of steps**
 
@@ -90,22 +112,43 @@ filter(avgByInterval, avgByInterval$avgSteps == max(avgByInterval$avgSteps))
 ## Imputing missing values
 Calculate and report the total number of missing values in the dataset:
 
-```{r}
+
+```r
 sum(is.na(activities$steps))
+```
+
+```
+## [1] 2304
+```
+
+```r
 sum(is.na(activities$date))
+```
+
+```
+## [1] 0
+```
+
+```r
 sum(is.na(activities$interval))
+```
+
+```
+## [1] 0
 ```
 
 **6. Code to describe and show a strategy for imputing missing data**
 
 Replace NA activities$steps data with average steps for that interval.
 
-```{r}
+
+```r
 activities2 <- activities
 naSteps <- is.na(activities2$steps)
 ```
 
-```{r}
+
+```r
 while(sum(naSteps) > 0 ){
 activities2[naSteps,]$steps <- avgByInterval[activities2[naSteps,]$interval == 
                                         avgByInterval$interval,]$avgSteps
@@ -117,7 +160,8 @@ naSteps <- is.na(activities2$steps)
 **are replaced with average steps at miss data's interval**
 **Code to find the average number of steps**
 
-```{r}
+
+```r
 stepsByDate2 <- data.frame(date = unique(activities2$date), totalSteps = 
                               tapply(activities2$steps, activities2$date, sum, 
                                      na.rm=TRUE), row.names = NULL)
@@ -126,23 +170,39 @@ stepsByDate2 <- data.frame(date = unique(activities2$date), totalSteps =
 Plot of average number of steps taken each day with the missing data replaced
 with average number at the missing data's interval:
 
-```{r}
+
+```r
 ggplot(stepsByDate2, aes(x = totalSteps)) + 
     geom_histogram( binwidth = 500, fill = "green4") +
     labs( title = "Total Number of Steps Taken Each Day", x = 
               "Total Steps" , y = "Frequency")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
+
 Caclculate and display mean and median of new data with missing values replaced:
 
-```{r}
+
+```r
 meanStepsByDate2 <- mean(stepsByDate2$totalSteps)
 medianStepsByDate2 <- median(stepsByDate2$totalSteps)
 ```
 
-```{r}
+
+```r
 meanStepsByDate2
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 medianStepsByDate2
+```
+
+```
+## [1] 10766.19
 ```
 
 The original mean is 9354.23, and the new mean is 10766.19. The orignal median
@@ -159,7 +219,8 @@ results.
 Make copy of data to a new data frame. Then, add a new column based on weekday
 or weekend day type:
 
-```{r}
+
+```r
 activities3 <-activities2
 activities3 <- mutate(activities3, daytype = ifelse(weekdays(activities3$date) 
                             %in% c("Saturday", "Sunday"), "weekend", "weekday"))
@@ -168,7 +229,8 @@ activities3$daytype <- as.factor(activities3$daytype)
 
 Calculate average steps taken each day based on day type:
 
-```{r}
+
+```r
 avgByInterval2 <- data.frame(interval = unique(activities3$interval), 
                         avgSteps = tapply(activities3$step, 
                         list(activities3$interval, activities3$daytype) , mean, 
@@ -178,7 +240,8 @@ avgByInterval2 <- data.frame(interval = unique(activities3$interval),
 Plot two plots with average steps taken at each interval. One plot for weekdays 
 and one plot for weekends:
 
-```{r}
+
+```r
 p1 <- ggplot(avgByInterval2, aes(x = interval, y = avgSteps.weekday)) + 
             geom_line(col = "blue") +
             labs(title = "Weekday", x = "Interval", y = "Average Steps")
@@ -187,13 +250,15 @@ p1 <- ggplot(avgByInterval2, aes(x = interval, y = avgSteps.weekday)) +
 p2 <- ggplot(avgByInterval2, aes(x = interval, y = avgSteps.weekend)) + 
             geom_line(col = "red") +
             labs(title = "Weekend", x = "Interval", y = "Average Steps")
-
 ```
 
 Display the two new plots:
 
-```{r}
+
+```r
 grid.arrange(p1, p2, top = "Average Steps by Interval by Day Type")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-18-1.png)<!-- -->
 
 
